@@ -6,6 +6,7 @@
   <groupId>it.eforhum</groupId>
   <artifactId>emailModule</artifactId>
   <version>1.0-SNAPSHOT</version>
+  <packaging>war</packaging>
 
   <name>emailModule</name>
 
@@ -49,20 +50,31 @@
     <groupId>jakarta.servlet</groupId>
     <artifactId>jakarta.servlet-api</artifactId>
     <version>6.1.0</version>
-</dependency>
-<dependency>
-  <groupId>com.github.colozzacristian</groupId>
-  <artifactId>emails</artifactId>
-  <version>0.2.0</version>
-</dependency>
+  </dependency>
+  <dependency>
+    <groupId>com.github.colozzacristian</groupId>
+    <artifactId>emails</artifactId>
+    <version>0.2.0</version>
+  </dependency>
 
-<!-- dotenv -->
-<dependency>
-    <groupId>io.github.cdimascio</groupId>
-    <artifactId>dotenv-java</artifactId>
-    <version>3.2.0</version>
-</dependency>
-  
+  <!-- dotenv -->
+  <dependency>
+      <groupId>io.github.cdimascio</groupId>
+      <artifactId>dotenv-java</artifactId>
+      <version>3.2.0</version>
+  </dependency>
+
+  <!-- JSON processing dependency -->
+  <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.12.1</version>
+  </dependency>
+  <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>2.12.1</version>
+  </dependency>
   </dependencies>
 
   <build>
@@ -107,6 +119,21 @@
           <artifactId>maven-project-info-reports-plugin</artifactId>
           <version>3.6.1</version>
         </plugin>
+
+        <plugin>
+          <groupId>org.eclipse.jetty.ee10</groupId>
+          <artifactId>jetty-ee10-maven-plugin</artifactId>
+          <version>12.0.30</version>
+          <configuration>
+          <scanIntervalSeconds>10</scanIntervalSeconds>
+            <webapp>
+            <contextPath>/authModule</contextPath>
+          </webapp>
+          </configuration>
+        </plugin>
+
+
+
       </plugins>
     </pluginManagement>
   </build>

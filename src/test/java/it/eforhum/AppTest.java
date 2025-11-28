@@ -16,7 +16,7 @@ public class AppTest {
 
     /**
      * Rigorous Test :-)
-     */
+    */
     @Test
     public void sendsEmail() {
 
@@ -39,8 +39,5 @@ public class AppTest {
         } catch (Exception e) {
             fail();
         }
-
-
-        
     }
 }
