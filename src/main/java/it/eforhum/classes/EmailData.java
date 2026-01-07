@@ -5,7 +5,7 @@ import it.eforhum.interfaces.MSGData;
 
 public class EmailData implements MSGData {
 
-    public static final String SENDER = Dotenv.load().get("testprojectwork2025@gmail.com");
+    public static final String SENDER = Dotenv.load().get("GMAIL_ACCOUNT");
     private String recipient;
     private String body;
     private String subject;
