@@ -1,9 +1,12 @@
 package it.eforhum.utils;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.github.colozzacristian.SmtpConnection;
 import com.github.colozzacristian.SmtpConnectionBuilder;
+import com.github.colozzacristian.SmtpException;
 import com.github.colozzacristian.SmtpResponse;
 import com.github.colozzacristian.SmtpSession;
 
@@ -18,6 +21,8 @@ public class EmailSender implements  Sendable{
 
     private final String PASSWORD = Dotenv.load().get("GMAIL_APP_PASSWORD");
     private final String USER = Dotenv.load().get("GMAIL_ACCOUNT");
+
+    private static final Logger logger = Logger.getLogger(EmailSender.class.getName());
 
     private EmailData emailData;
     private SmtpSession session;
@@ -46,6 +51,7 @@ public class EmailSender implements  Sendable{
             );
 
             if(response.getCode() == 250){ // success code
+                logger.log(Level.INFO,"Email sended successfully");
                 return true;
             }else{
                 System.out.println(response.getCode());
@@ -60,11 +66,14 @@ public class EmailSender implements  Sendable{
            try {
 
                 session.close();
+                logger.log(Level.INFO, "Session closed");
 
-            }catch(Exception e) {
+            }catch(SmtpException e) {
 
                 e.printStackTrace();
 
+            }catch(IOException e){
+                e.printStackTrace();
             }
         }
 
