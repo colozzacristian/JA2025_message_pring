@@ -1,50 +1,51 @@
 package it.eforhum.emailModule.controller;
 
+
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.eforhum.emailModule.dtos.EmailDataDTO;
 import it.eforhum.emailModule.entity.EmailData;
 import it.eforhum.emailModule.service.EmailSenderService;
-
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/send/email")
+@Slf4j
 public class EmailController {
 
     private EmailData emailData;
-    private static final Logger logger = Logger.getLogger(EmailController.class.getName());
+
+    private final EmailSenderService senderService;
+
+    public EmailController(EmailSenderService senderService){
+        this.senderService = senderService;
+    }
+  
 
     @PostMapping
     public String sendEmail(@RequestBody EmailDataDTO emailDataDTO) {
         
         if(emailDataDTO.dest() == null || emailDataDTO.dest().isEmpty()) {
-            logger.log(Level.WARNING, "Recipient email is required");
+            log.warn("Recipient is required");
             return "Recipient email is required";
         }
 
         if(!EmailData.isRecipientValid(emailDataDTO.dest())){
-            logger.log(Level.WARNING, "The email address " + emailDataDTO.dest() + " is not valid");
+            log.warn("The email provided is not valid");
             return "Recipient email is not valid";
         }
 
-        emailData.setBody(emailDataDTO.body());
-        emailData.setRecipient(emailDataDTO.dest());
-        emailData.setSubject(emailDataDTO.subject());
+        emailData = new EmailData(emailDataDTO.dest(), emailDataDTO.body(), emailDataDTO.subject());
 
-        EmailSenderService emailService = new EmailSenderService(emailData);
-
-        if(emailService.sendMessage()){
-            logger.log(Level.INFO, "Email sent successfully to " + emailDataDTO.dest());
+        if(senderService.sendMessage(emailData)){
+            log.info("Email sended successfully");
             return "Email sent successfully";
         }
 
-        logger.log(Level.WARNING, "Error sending email to " + emailDataDTO.dest());
+        log.warn("Error sending the email");
         return "Error sending email";
     }
 }

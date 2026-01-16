@@ -1,8 +1,6 @@
 package it.eforhum.emailModule.service;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -15,38 +13,36 @@ import com.github.colozzacristian.SmtpSession;
 
 import it.eforhum.emailModule.entity.EmailData;
 import it.eforhum.emailModule.interfaces.Sendable;
+import lombok.extern.slf4j.Slf4j;
 
 
 @Service
+@Slf4j
 public class EmailSenderService implements Sendable{
     
     private static final String SMTP_SERVER = "smtp.gmail.com";
-    private final Integer PORT = System.getenv("GMAIL_PORT") != null ? Integer.valueOf(System.getenv("GMAIL_PORT")) : 465;
+
     
+    @Value("${gmail.port}")
+    private Integer port;
+
     @Value("${gmail.app.password}")
-    private String PASSWORD;
+    private String password;
 
     @Value("${gmail.account}")
-    private String USER;
-
-    private static final Logger logger = Logger.getLogger(EmailSenderService.class.getName());
+    private String user;
 
     private EmailData emailData;
     private SmtpSession session;
-    private SmtpConnection conncetion;
 
     public EmailSenderService(){}
 
-    public EmailSenderService(EmailData emailData){
-        this.emailData = emailData;
-    }
-
     @Override
-    public boolean sendMessage(){
+    public boolean sendMessage(EmailData emailData){
         try {
-            conncetion = SmtpConnectionBuilder.connectSSL(SMTP_SERVER, PORT, "localhost");
+            SmtpConnection connection = SmtpConnectionBuilder.connectSSL("smtp.gmail.com", port, "localhost");
             
-            session = conncetion.createSession(USER, PASSWORD);
+            session = connection.createSession(user, password);
 
             SmtpResponse response = session.sendMail(
                 EmailData.SENDER,
@@ -56,15 +52,19 @@ public class EmailSenderService implements Sendable{
             );
 
             if(response.getCode() != 250){
-                logger.log(Level.WARNING, "Failed to send email. Response code: " + response.getCode());
+                log.warn( "Failed to send email. Response code: %d", response.getCode());
                 return false;
             }
-        }catch(IOException e) {
+        }catch(SmtpException e) {
+            e.printStackTrace();
+        }catch(IOException e){
             e.printStackTrace();
         }finally{
             try {
-                session.close();
-                logger.log(Level.INFO, "Session closed");
+                if(session != null){
+                    session.close();
+                    log.info("Session closed");
+                }
             }catch(SmtpException e) {
                 e.printStackTrace();
             }catch(IOException e){
