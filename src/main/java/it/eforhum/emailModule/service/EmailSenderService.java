@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import com.github.colozzacristian.SmtpConnection;
 import com.github.colozzacristian.SmtpConnectionBuilder;
-import com.github.colozzacristian.SmtpException;
 import com.github.colozzacristian.SmtpResponse;
 import com.github.colozzacristian.SmtpSession;
 
@@ -19,9 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class EmailSenderService implements Sendable{
-    
-    private static final String SMTP_SERVER = "smtp.gmail.com";
-
     
     @Value("${gmail.port}")
     private Integer port;
@@ -35,14 +31,32 @@ public class EmailSenderService implements Sendable{
     private EmailData emailData;
     private SmtpSession session;
 
-    public EmailSenderService(){}
+    public EmailSenderService(){/*default constructor*/}
 
     @Override
     public boolean sendMessage(EmailData emailData){
+
+        if(emailData == null){
+            log.error("Email data cannot be null");
+            return false;
+        }
+        if(emailData.getRecipient() == null || emailData.getRecipient().isEmpty()){
+            log.error("Email recipient cannot be null or empty");
+            return false;
+        }
+
         try {
             SmtpConnection connection = SmtpConnectionBuilder.connectSSL("smtp.gmail.com", port, "localhost");
+            if(connection == null){
+                log.warn("Failed to connect to the SMTP server");
+                return false;
+            }
             
             session = connection.createSession(user, password);
+            if(session == null){
+                log.warn("Failed to create session");
+                return false;
+            }
 
             SmtpResponse response = session.sendMail(
                 EmailData.SENDER,
@@ -51,27 +65,34 @@ public class EmailSenderService implements Sendable{
                 emailData.getBody()
             );
 
-            if(response.getCode() != 250){
-                log.warn( "Failed to send email. Response code: %d", response.getCode());
+            if(response == null){
+                log.warn("Error trying to get server response");
                 return false;
             }
-        }catch(SmtpException e) {
-            e.printStackTrace();
-        }catch(IOException e){
-            e.printStackTrace();
+
+            if(response.getCode() != 250){
+                log.warn( "Failed to send email. Response code: {}", response.getCode());
+                return false;
+            }
+        }catch(IOException e) {
+            log.error(
+                "IOException occurred while sending the email to:{}", 
+                emailData.getRecipient(),
+                e
+            );
+            return false;
         }finally{
             try {
                 if(session != null){
                     session.close();
                     log.info("Session closed");
                 }
-            }catch(SmtpException e) {
-                e.printStackTrace();
             }catch(IOException e){
-                e.printStackTrace();
+                log.error("An error occurred while closing the session", e);
             }
         }
 
+        log.info("Email sended successfully");
         return true;
     }
 

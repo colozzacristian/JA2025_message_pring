@@ -30,10 +30,7 @@ public class EmailData implements MSGData {
     }
 
     public static boolean isRecipientValid(String recipient){
-        if(recipient.contains("@") && recipient.contains(".")){
-            return true;
-        }
-        return false;
+        return recipient.contains("@") && recipient.contains(".");
     }
     
 }
